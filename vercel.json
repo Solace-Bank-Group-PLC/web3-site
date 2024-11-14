@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "JWT_SECRET": "@jwt_secret",
+    "API_URL": "@api_url",
+    "WEB3_PROVIDER_URL": "@web3_provider_url"
+  }
+}
