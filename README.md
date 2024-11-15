@@ -56,8 +56,8 @@ The project is organized into the following main folders:
 
 ### Prerequisites
 
-- Node.js (v16 or later)
-- NPM or Yarn package manager
+- Node.js (v20.9.0 or later)
+- pnpm package manager
 - Git for version control
 
 ### Steps to Run Locally
@@ -72,14 +72,14 @@ The project is organized into the following main folders:
 2. Install dependencies:
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. Create an `.env` file in the root directory using the `.env.example` template.
 4. Start the development server:
 
    ```bash
-   npm start
+   pnpm dev
    ```
 
 ### Deployment

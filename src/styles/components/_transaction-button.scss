@@ -1,0 +1,30 @@
+.transaction-button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .transaction-button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+
+  .error-message {
+    color: var(--error);
+    font-size: 0.9rem;
+  }
+} 

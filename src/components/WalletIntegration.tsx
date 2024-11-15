@@ -1,48 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import Web3 from 'web3';
+import React from 'react';
+import { useWeb3 } from '../contexts/Web3Context';
 
 const WalletIntegration: React.FC = () => {
-  const [web3, setWeb3] = useState<Web3 | null>(null);
-  const [account, setAccount] = useState<string | null>(null);
-
-  useEffect(() => {
-    const initWeb3 = async () => {
-      if (window.ethereum) {
-        const web3Instance = new Web3(window.ethereum);
-        try {
-          await window.ethereum.enable();
-          setWeb3(web3Instance);
-        } catch (error) {
-          console.error("User denied account access");
-        }
-      } else if (window.web3) {
-        setWeb3(new Web3(window.web3.currentProvider));
-      } else {
-        console.log('No Web3 detected. Please install MetaMask!');
-      }
-    };
-
-    initWeb3();
-  }, []);
-
-  useEffect(() => {
-    const getAccount = async () => {
-      if (web3) {
-        const accounts = await web3.eth.getAccounts();
-        setAccount(accounts[0]);
-      }
-    };
-
-    getAccount();
-  }, [web3]);
+  const { 
+    account, 
+    chainId, 
+    connect, 
+    disconnect, 
+    isConnecting, 
+    error 
+  } = useWeb3();
 
   return (
-    <div>
+    <div className="wallet-integration">
       <h2>Web3 Wallet Integration</h2>
+      
+      {error && (
+        <div className="error-message">
+          {error.message}
+        </div>
+      )}
+
       {account ? (
-        <p>Connected Account: {account}</p>
+        <div className="wallet-info">
+          <p>Connected Account: {account}</p>
+          <p>Chain ID: {chainId}</p>
+          <button 
+            onClick={disconnect}
+            className="disconnect-button"
+          >
+            Disconnect Wallet
+          </button>
+        </div>
       ) : (
-        <p>Please connect your Web3 wallet</p>
+        <button 
+          onClick={connect}
+          disabled={isConnecting}
+          className="connect-button"
+        >
+          {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+        </button>
       )}
     </div>
   );

@@ -3,10 +3,18 @@
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/node"
+      "use": "@vercel/static-build",
+      "config": { 
+        "distDir": "dist",
+        "buildCommand": "pnpm build"
+      }
     }
   ],
   "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
     {
       "src": "/(.*)",
       "dest": "/index.html"
@@ -15,6 +23,7 @@
   "env": {
     "JWT_SECRET": "@jwt_secret",
     "API_URL": "@api_url",
-    "WEB3_PROVIDER_URL": "@web3_provider_url"
+    "WEB3_PROVIDER_URL": "@web3_provider_url",
+    "NODE_VERSION": "20.9.0"
   }
 }

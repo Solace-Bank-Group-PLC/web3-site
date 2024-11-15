@@ -1,0 +1,56 @@
+.wallet-integration {
+  padding: 1.5rem;
+  border-radius: 8px;
+  background: var(--card-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .error-message {
+    margin: 1rem 0;
+    padding: 0.75rem;
+    border-radius: 4px;
+    background: var(--error-bg);
+    color: var(--error-text);
+  }
+
+  .wallet-info {
+    margin: 1rem 0;
+    
+    p {
+      margin: 0.5rem 0;
+      color: var(--text-primary);
+    }
+  }
+
+  .connect-button,
+  .disconnect-button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+
+  .connect-button {
+    background: var(--primary);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+  }
+
+  .disconnect-button {
+    background: var(--error);
+    color: white;
+
+    &:hover {
+      background: var(--error-dark);
+    }
+  }
+} 

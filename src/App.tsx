@@ -1,28 +1,34 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import PublicContent from './pages/PublicContent';
-import UserDashboard from './pages/UserDashboard';
-import EmployeeDashboard from './pages/EmployeeDashboard';
-import AdminDashboard from './pages/AdminDashboard';
+import { Web3Provider } from './contexts/Web3Context';
+import WalletIntegration from './components/WalletIntegration';
+import NetworkSwitcher from './components/NetworkSwitcher';
+import TransactionButton from './components/TransactionButton';
 
 const App: React.FC = () => {
+  const handleTransaction = async () => {
+    // Example transaction
+    // Replace with your actual transaction logic
+    throw new Error('Transaction not implemented');
+  };
+
   return (
-    <Router>
+    <Web3Provider>
       <div className="app">
-        <Header />
-        <main>
-          <Switch>
-            <Route exact path="/" component={PublicContent} />
-            <Route path="/user-dashboard" component={UserDashboard} />
-            <Route path="/employee-dashboard" component={EmployeeDashboard} />
-            <Route path="/admin-dashboard" component={AdminDashboard} />
-          </Switch>
+        <header className="app-header">
+          <h1>Web3 DApp</h1>
+          <div className="header-actions">
+            <NetworkSwitcher />
+            <WalletIntegration />
+          </div>
+        </header>
+        
+        <main className="app-main">
+          <TransactionButton onClick={handleTransaction}>
+            Send Transaction
+          </TransactionButton>
         </main>
-        <Footer />
       </div>
-    </Router>
+    </Web3Provider>
   );
 };
 

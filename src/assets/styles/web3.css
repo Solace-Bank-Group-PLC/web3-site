@@ -1,0 +1,39 @@
+.web3-status {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 1rem 0;
+}
+
+.web3-status .loading {
+  color: var(--text-color);
+  font-style: italic;
+}
+
+.web3-status .error {
+  color: var(--error-color);
+  font-weight: 500;
+}
+
+.web3-status .connected {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.web3-status .account {
+  font-family: monospace;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.web3-status .balance {
+  color: var(--success-color);
+  font-weight: 500;
+}
+
+.web3-status .not-connected {
+  color: var(--text-color);
+  font-weight: 500;
+} 
