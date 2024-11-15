@@ -1,41 +1,57 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# Description: Reset TypeScript configuration and dependencies
+# Usage: ./scripts/reset-typescript.sh
 
 set -e  # Exit on error
+set -u  # Exit on undefined variables
 
-echo "Starting TypeScript reset process..."
+# Log function
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
+}
 
-# Backup existing configuration
+log "Starting TypeScript reset process..."
+
+# Create backup directory if it doesn't exist
+BACKUP_DIR=".typescript-backups"
+mkdir -p "$BACKUP_DIR"
+
+# Backup existing configuration with timestamp
 if [ -f tsconfig.json ]; then
-    echo "Backing up existing tsconfig.json..."
-    cp tsconfig.json tsconfig.json.backup
+    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    log "Backing up existing tsconfig.json..."
+    cp tsconfig.json "${BACKUP_DIR}/tsconfig.json.${TIMESTAMP}.backup"
+    # Keep only last 5 backups
+    ls -t "${BACKUP_DIR}"/tsconfig.json.*.backup | tail -n +6 | xargs rm -f 2>/dev/null || true
 fi
 
 # Remove TypeScript-related files
-echo "Removing TypeScript files..."
+log "Removing TypeScript files..."
 rm -rf tsconfig.json tsconfig.node.json
 
 # Clear VS Code TypeScript server
-echo "Clearing TypeScript server cache..."
+log "Clearing TypeScript server cache..."
 rm -rf .vscode/.tsbuildinfo .vscode/ts-cache
 
 # Restart VS Code TypeScript server
-echo "Restarting TypeScript server..."
+log "Restarting TypeScript server..."
 code --kill-typescript-server || true
 
 # Remove and reinstall TypeScript dependencies
-echo "Reinstalling TypeScript dependencies..."
+log "Reinstalling TypeScript dependencies..."
 pnpm remove typescript @types/react @types/react-dom @types/node || true
 pnpm add -D typescript@latest @types/react@latest @types/react-dom@latest @types/node@latest || { 
-    echo "Failed to install dependencies"
+    log "Failed to install dependencies"
     exit 1
 }
 
 # Generate new tsconfig
-echo "Generating new TypeScript configuration..."
-pnpm tsc --init || { echo "Failed to initialize TypeScript config"; exit 1; }
+log "Generating new TypeScript configuration..."
+pnpm tsc --init || { log "Failed to initialize TypeScript config"; exit 1; }
 
 # Apply custom configuration
-echo "Applying custom TypeScript configuration..."
+log "Applying custom TypeScript configuration..."
 cat > tsconfig.json << 'EOL'
 {
   "compilerOptions": {
@@ -64,8 +80,10 @@ cat > tsconfig.json << 'EOL'
 }
 EOL
 
-# Run type check
-echo "Running type check..."
-pnpm typecheck || { echo "Type check failed"; exit 1; }
+# Verify configuration
+if ! pnpm tsc --noEmit; then
+    log "TypeScript configuration verification failed"
+    exit 1
+fi
 
-echo "TypeScript reset completed successfully!"
+log "TypeScript reset completed successfully!"

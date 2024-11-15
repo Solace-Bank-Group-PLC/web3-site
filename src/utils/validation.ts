@@ -5,25 +5,58 @@ export interface ValidationError {
   message: string;
 }
 
-export class ValidationResult {
+type ValidationOptions = {
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: RegExp;
+  custom?: (value: unknown) => boolean;
+};
+
+export class Validator {
   private errors: ValidationError[] = [];
 
   addError(field: string, message: string): void {
     this.errors.push({ field, message });
   }
 
-  hasErrors(): boolean {
-    return this.errors.length > 0;
+  validate(field: string, value: unknown, options: ValidationOptions = {}): boolean {
+    if (options.required && (value === undefined || value === null || value === '')) {
+      this.addError(field, 'This field is required');
+      return false;
+    }
+
+    if (typeof value === 'string') {
+      if (options.minLength && value.length < options.minLength) {
+        this.addError(field, `Minimum length is ${options.minLength}`);
+        return false;
+      }
+
+      if (options.maxLength && value.length > options.maxLength) {
+        this.addError(field, `Maximum length is ${options.maxLength}`);
+        return false;
+      }
+
+      if (options.pattern && !options.pattern.test(value)) {
+        this.addError(field, 'Invalid format');
+        return false;
+      }
+    }
+
+    if (options.custom && !options.custom(value)) {
+      this.addError(field, 'Invalid value');
+      return false;
+    }
+
+    return true;
   }
 
   getErrors(): ValidationError[] {
-    return [...this.errors];
+    return this.errors;
   }
 
-  throwIfErrors(): void {
-    if (this.hasErrors()) {
-      throw new AppError('Validation failed', 400, { errors: this.errors });
-    }
+  hasErrors(): boolean {
+    return this.errors.length > 0;
   }
 }
 

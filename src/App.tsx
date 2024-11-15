@@ -1,14 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Web3Provider } from './contexts/Web3Context';
 import WalletIntegration from './components/WalletIntegration';
 import NetworkSwitcher from './components/NetworkSwitcher';
 import TransactionButton from './components/TransactionButton';
 
-const App: React.FC = () => {
-  const handleTransaction = async () => {
-    // Example transaction
-    // Replace with your actual transaction logic
-    throw new Error('Transaction not implemented');
+// Use type for function components
+type AppProps = Record<string, never>; // Empty props object type
+
+const App: React.FC<AppProps> = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleTransaction = async (): Promise<void> => {
+    setIsLoading(true);
+    try {
+      // Example transaction
+      // Replace with your actual transaction logic
+      throw new Error('Transaction not implemented');
+    } catch (error) {
+      // Add error handling
+      console.error('Transaction failed:', error);
+      throw error; // Re-throw if you want to handle it in the UI
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -23,7 +37,11 @@ const App: React.FC = () => {
         </header>
         
         <main className="app-main">
-          <TransactionButton onClick={handleTransaction}>
+          <TransactionButton 
+            onClick={handleTransaction}
+            // Add aria-label for accessibility
+            aria-label="Send blockchain transaction"
+          >
             Send Transaction
           </TransactionButton>
         </main>

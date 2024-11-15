@@ -1,43 +1,64 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# Description: Clean installation script for project setup
+# Usage: ./scripts/clean-install.sh
 
 set -e  # Exit on error
+set -u  # Exit on undefined variables
 
-echo "Starting clean installation process..."
+# Log function
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
+}
+
+log "Starting clean installation process..."
 
 # Remove existing node_modules and lock files
-echo "Cleaning existing files..."
+log "Cleaning existing files..."
 rm -rf node_modules package-lock.json pnpm-lock.yaml
 
-# Clear npm cache
-echo "Clearing npm cache..."
-npm cache clean --force
+# Install specific pnpm version if not present or version mismatch
+check_pnpm_version() {
+    local required_version="9.13.2"
+    
+    # Check if Node.js is installed
+    if ! command -v node &> /dev/null; then
+        log "Node.js is not installed. Please install Node.js first."
+        exit 1
+    fi
+    
+    if ! command -v pnpm &> /dev/null || [[ $(pnpm -v) != "$required_version" ]]; then
+        log "Installing pnpm version $required_version..."
+        # Use npm for initial pnpm installation
+        npm install -g pnpm@$required_version || {
+            log "Failed to install pnpm using npm"
+            exit 1
+        }
+        
+        # Verify installation
+        if [[ $(pnpm -v) != "$required_version" ]]; then
+            log "Failed to install correct pnpm version"
+            exit 1
+        fi
+    fi
+}
 
-# Install pnpm if not present
-if ! command -v pnpm &> /dev/null; then
-    echo "Installing pnpm..."
-    npm install -g pnpm || { echo "Failed to install pnpm"; exit 1; }
-fi
+check_pnpm_version
 
-# Setup pnpm environment
-export PNPM_HOME="${PNPM_HOME:-$HOME/.local/share/pnpm}"
-export PATH="$PNPM_HOME:$PATH"
+# Clear package manager cache
+log "Clearing pnpm cache..."
+pnpm store prune
 
 # Install dependencies
-echo "Installing project dependencies..."
-pnpm install --no-frozen-lockfile || { echo "Failed to install dependencies"; exit 1; }
-
-# Install TypeScript globally if not present
-if ! command -v tsc &> /dev/null; then
-    echo "Installing TypeScript globally..."
-    pnpm add -g typescript || { echo "Failed to install TypeScript"; exit 1; }
-fi
+log "Installing project dependencies..."
+pnpm install --no-frozen-lockfile || { log "Failed to install dependencies"; exit 1; }
 
 # Run type check
-echo "Running type check..."
-pnpm typecheck || { echo "Type check failed"; exit 1; }
+log "Running type check..."
+pnpm typecheck || { log "Type check failed"; exit 1; }
 
 # Run security audit
-echo "Running security audit..."
-pnpm audit || { echo "Security audit failed but continuing..."; }
+log "Running security audit..."
+pnpm audit || { log "Security audit failed but continuing..."; }
 
-echo "Clean installation completed successfully!"
+log "Clean installation completed successfully!"

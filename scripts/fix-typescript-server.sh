@@ -1,48 +1,74 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# Description: Fix TypeScript server issues in VS Code
+# Usage: ./scripts/fix-typescript-server.sh
 
 set -e  # Exit on error
+set -u  # Exit on undefined variables
 
-echo "Starting TypeScript server fix..."
+# Log function
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
+}
 
-# Detect OS for proper paths
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    VSCODE_CACHE_PATH="~/Library/Application Support/Code/Cache"
-    VSCODE_APP="Visual Studio Code"
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    VSCODE_CACHE_PATH="~/.config/Code/Cache"
-    VSCODE_APP="code"
-else
-    echo "Unsupported operating system"
-    exit 1
-fi
+log "Starting TypeScript server fix..."
+
+# Detect OS and set paths
+case "$OSTYPE" in
+    darwin*)
+        VSCODE_CACHE_PATH="$HOME/Library/Application Support/Code/Cache"
+        VSCODE_APP="Visual Studio Code"
+        OPEN_CMD="open -a"
+        ;;
+    linux-gnu*)
+        VSCODE_CACHE_PATH="$HOME/.config/Code/Cache"
+        VSCODE_APP="code"
+        OPEN_CMD="code"
+        ;;
+    *)
+        log "Unsupported operating system: $OSTYPE"
+        exit 1
+        ;;
+esac
 
 # Verify VS Code installation
 if ! command -v code &> /dev/null; then
-    echo "VS Code is not installed or not in PATH"
+    log "VS Code is not installed or not in PATH"
     exit 1
 fi
 
+# Function to kill process safely
+kill_process() {
+    pkill -f "$1" || true
+    sleep 2
+}
+
 # Kill TypeScript server processes
-echo "Stopping TypeScript server..."
-pkill -f "TypeScript" || true
+log "Stopping TypeScript server..."
+kill_process "TypeScript"
 
 # Clear VS Code TypeScript cache
-echo "Clearing TypeScript cache..."
-rm -rf "$VSCODE_CACHE_PATH/typescript*" || true
-rm -rf "$VSCODE_CACHE_PATH/CachedData/typescript*" || true
+log "Clearing TypeScript cache..."
+rm -rf "${VSCODE_CACHE_PATH}"/typescript* || true
+rm -rf "${VSCODE_CACHE_PATH}"/CachedData/typescript* || true
 
 # Restart VS Code
-echo "Restarting VS Code..."
-pkill -f "Code" || true
-sleep 2
-open -a "$VSCODE_APP" || code || { echo "Failed to start VS Code"; exit 1; }
+log "Restarting VS Code..."
+kill_process "Code"
 
-# Wait for VS Code to start
-echo "Waiting for VS Code to initialize..."
+# Start VS Code based on OS
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    $OPEN_CMD "$VSCODE_APP" || { log "Failed to start VS Code"; exit 1; }
+else
+    $OPEN_CMD || { log "Failed to start VS Code"; exit 1; }
+fi
+
+# Wait for VS Code to initialize
+log "Waiting for VS Code to initialize..."
 sleep 5
 
 # Select workspace TypeScript version
-echo "Selecting TypeScript version..."
+log "Selecting TypeScript version..."
 code --execute-command "typescript.selectTypeScriptVersion"
 
-echo "TypeScript server fix completed!"
+log "TypeScript server fix completed successfully!"

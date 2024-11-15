@@ -36,4 +36,14 @@ interface SelectProps<T> extends BaseComponentProps {
   label?: string;
   required?: boolean;
   disabled?: boolean;
+}
+
+export interface TransactionHistoryOptions {
+  address: string;
+  maxTransactions?: number;
+}
+
+export interface ValidationError {
+  field: string;
+  message: string;
 } 

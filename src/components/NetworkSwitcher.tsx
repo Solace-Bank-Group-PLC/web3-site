@@ -1,64 +1,40 @@
-import React from 'react';
-import { useWeb3 } from '../contexts/Web3Context';
-import { Button, message } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { useWeb3 } from '../providers/Web3Provider';
 
-const NetworkSwitcher: React.FC = () => {
+const NETWORKS = {
+  1: 'Ethereum Mainnet',
+  5: 'Goerli Testnet',
+  137: 'Polygon Mainnet',
+  80001: 'Mumbai Testnet'
+};
+
+export const NetworkSwitcher: React.FC = () => {
   const { provider, chainId } = useWeb3();
+  const [switching, setSwitching] = useState(false);
 
-  const switchNetwork = async (targetChainId: string) => {
+  const switchNetwork = async (networkId: number) => {
+    if (!provider) return;
+    setSwitching(true);
     try {
-      if (!window.ethereum) {
-        throw new Error('No Web3 provider found');
-      }
-
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: targetChainId }],
-      });
+      await provider.send('wallet_switchEthereumChain', [
+        { chainId: `0x${networkId.toString(16)}` }
+      ]);
     } catch (error) {
-      if ((error as any).code === 4902) {
-        // Chain not added, prompt to add it
-        try {
-          await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: targetChainId,
-              rpcUrls: ['https://...'], // Add appropriate RPC URL
-              chainName: 'Network Name',
-              nativeCurrency: {
-                name: 'ETH',
-                symbol: 'ETH',
-                decimals: 18
-              }
-            }]
-          });
-        } catch (addError) {
-          message.error('Failed to add network');
-          console.error(addError);
-        }
-      } else {
-        message.error('Failed to switch network');
-        console.error(error);
-      }
+      console.error('Failed to switch network:', error);
+    } finally {
+      setSwitching(false);
     }
   };
 
   return (
-    <div className="network-switcher">
-      <Button 
-        onClick={() => switchNetwork('0x1')}
-        type={chainId === 1 ? 'primary' : 'default'}
-      >
-        Mainnet
-      </Button>
-      <Button 
-        onClick={() => switchNetwork('0x5')}
-        type={chainId === 5 ? 'primary' : 'default'}
-      >
-        Goerli
-      </Button>
-    </div>
+    <select 
+      value={chainId || ''}
+      onChange={(e) => switchNetwork(Number(e.target.value))}
+      disabled={switching || !provider}
+    >
+      {Object.entries(NETWORKS).map(([id, name]) => (
+        <option key={id} value={id}>{name}</option>
+      ))}
+    </select>
   );
-};
-
-export default NetworkSwitcher; 
+}; 

@@ -1,25 +1,19 @@
-interface ApiResponse<T = unknown> {
-  data: T;
-  error: string | null;
-  status: number;
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
 }
 
-interface PaginatedResponse<T> extends ApiResponse<T> {
-  meta: {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
+export interface PaginatedResponse<T> extends ApiResponse {
+  data: {
+    items: T[];
+    total: number;
+    page: number;
+    pageSize: number;
   };
 }
 
-interface ErrorResponse {
-  error: string;
-  status: number;
-  details?: unknown;
-}
-
-type ApiHandler<T = unknown> = (
-  req: NextApiRequest,
-  res: NextApiResponse<ApiResponse<T> | ErrorResponse>
-) => Promise<void> | void; 
+export interface ValidationError {
+  field: string;
+  message: string;
+} 
